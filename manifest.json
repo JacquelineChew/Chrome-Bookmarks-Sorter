@@ -1,0 +1,19 @@
+{
+  "name": "Bookmarks Sort By Date",
+  "description": "Base Level Extension",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "cookies"
+  ],
+  "action": {
+    "default_popup": "hello.html",
+    "default_icon": "red_bookmark.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
