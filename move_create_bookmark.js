@@ -1,8 +1,3 @@
-// NOTES:
-// Does not sort bookmarks inside "Bookmarks bar"
-// Does not sort folders (Folders stay near the top, or near bottom)
-// "chrome://discards" always stays at the top
-// All other bookmarks sorted in reverse chronological order (newest first) 
 
 const bm = chrome.bookmarks;
 
@@ -13,6 +8,18 @@ function getSortPreference(callback) {
   });
 }
 
+// Function to check if sorting should apply globally
+function shouldSortAll(callback) {
+  chrome.storage.local.get({ sortAll: true }, (data) => {
+    callback(data.sortAll);
+  });
+}
+
+// NOTES:
+// Does not sort bookmarks inside "Bookmarks bar"
+// Does not sort folders (Folders stay near the top, or near bottom)
+// "chrome://discards" always stays at the top
+// All other bookmarks sorted in reverse chronological order (newest first) 
 function sortAndReorder(parent) {
   if (!parent) return;
 
@@ -47,13 +54,48 @@ function sortAndReorder(parent) {
   });
 }
 
+// Function to move a new bookmark near the top (without sorting)
+function moveNearTop(bookmark) {
+  const parent = bookmark.parentId;
+  if (!parent) return;
+
+  bm.getChildren(parent, (siblings) => {
+    let newIndex = 0;
+
+    // Ensure "chrome://discards" stays at the top
+    if (siblings.some((b) => b.url === "chrome://discards/")) {
+      newIndex = 1;
+    }
+
+    // Count folders (if folderBefore is true)
+    getSortPreference((folderBefore) => {
+      if (folderBefore) {
+        let folderCount = siblings.filter((b) => !b.url).length;
+        newIndex += folderCount;
+      }
+
+      bm.move(bookmark.id, { parentId: parent, index: newIndex });
+    });
+  });
+}
+
 // Apply sorting when a bookmark is created
 bm.onCreated.addListener((id, bookmark) => {
-  sortAndReorder(bookmark.parentId);
+  shouldSortAll((sortAll) => {
+    if (sortAll) {
+      sortAndReorder(bookmark.parentId);
+    } else {
+      moveNearTop(bookmark);
+    }
+  });
 });
 
 // Apply sorting when a bookmark is moved
 bm.onMoved.addListener((id, moveInfo) => {
-  sortAndReorder(moveInfo.parentId);
+  shouldSortAll((sortAll) => {
+    if (sortAll) {
+      sortAndReorder(moveInfo.parentId);
+    }
+  });
 });
 
