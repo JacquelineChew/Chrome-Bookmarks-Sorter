@@ -1,7 +1,7 @@
 {
   "name": "Bookmarks Sort By Date",
-  "description": "Base Level Extension",
-  "version": "1.0",
+  "description": "Most recent bookmarks appear on top",
+  "version": "1.7",
   "manifest_version": 3,
   "permissions": [
     "bookmarks",
