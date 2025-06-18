@@ -113,7 +113,7 @@ bm.onMoved.addListener((id, moveInfo) => {
     if (sortAll) {
       sortAndReorder(moveInfo.parentId);
     } 
-    else {
+    if (moveInfo.parentId != moveInfo.oldParentId) {
       bm.get(id, (results) => {
         const bookmark = results[0];
         if (bookmark) {
